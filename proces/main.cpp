@@ -1,10 +1,11 @@
-#include 
+#include "WorkProcess.h"
 
-CWorkProcess SartSrv("sc", "start TermService11");
-
-SartSrv.LaunchProcess();  
-
-if (!SartSrv.WaitForEnded(1))
+int main()
 {
- SartSrv.StopProcess();
+    CWorkProcess SartSrv("calc", "/h");
+    SartSrv.LaunchProcess();
+    if (!SartSrv.WaitForEnded(1))
+        SartSrv.StopProcess();
+
+    return 0;
 }
