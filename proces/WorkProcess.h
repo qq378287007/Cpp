@@ -1,12 +1,12 @@
-#pragma  once
+#pragma once
 
-#include "Windows.h"
+#include <windows.h>
 #include <tchar.h>
 
 class CWorkProcess
 {
 public:
-    CWorkProcess(char* szApp, char* arg);
+    explicit CWorkProcess(const char *szApp, const char *arg = NULL);
     ~CWorkProcess();
 
     bool LaunchProcess(bool bShowWind = false);
@@ -17,8 +17,9 @@ public:
 
     bool WaitForEnded(int nTimeout);
 
-private:
+    static bool RunSubProcess(_TCHAR *szCmd, int nTimeout);
 
+private:
     PROCESS_INFORMATION m_pi;
-    char*               m_pszCmd;
+    char *m_pszCmd;
 };
