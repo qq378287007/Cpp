@@ -1,0 +1,5 @@
+{
+    "code-runner.executorMap": {
+        "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt -LD:/soft/Python311/libs -lpython311 && $dir$fileNameWithoutExt"
+    }
+}
