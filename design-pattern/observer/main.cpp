@@ -1,55 +1,55 @@
 #include <iostream>
 #include <vector>
-#include <Windows.h>
+#include <memory>
 using namespace std;
 
 class Observer
 {
 public:
     virtual ~Observer() {}
-    virtual void msgs(int, int) = 0;
-    virtual void msgw(int, int) = 0;
+    virtual void msg_save(int, int) = 0;
+    virtual void msg_write(int, int) = 0;
 };
 
 class Mobile : public Observer
 {
 public:
-    virtual void msgs(int _ms, int _mr)
+    virtual void msg_save(int _ms, int _mr)
     {
-        cout << "收到短消息：存入" << _ms << "元，"
-             << "余额" << _mr << "元；" << endl;
+        cout << "Received SMS: deposited " << _ms << " yuan, "
+             << "balance " << _mr << " yuan;" << endl;
     }
-    virtual void msgw(int _mw, int _mr)
+    virtual void msg_write(int _mw, int _mr)
     {
-        cout << "收到短消息：取出" << _mw << "元，"
-             << "余额" << _mr << "元；" << endl;
+        cout << "Received SMS: Retrieve " << _mw << "yuan, "
+             << "balance " << _mr << " yuan;" << endl;
     }
 };
 
 class QQ : public Observer
 {
 public:
-    virtual void msgs(int _qs, int _qr)
+    virtual void msg_save(int _qs, int _qr)
     {
-        cout << "收到QQ消息：存入" << _qs << "元，"
-             << "余额" << _qr << "元；" << endl;
+        cout << "Received QQ message: deposited " << _qs << " yuan, "
+             << "balance " << _qr << " yuan;" << endl;
     }
-    virtual void msgw(int _qw, int _qr)
+    virtual void msg_write(int _qw, int _qr)
     {
-        cout << "收到QQ消息：取出" << _qw << "元，"
-             << "余额" << _qr << "元；" << endl;
+        cout << "Received QQ message: Retrieve" << _qw << " yuan, "
+             << "balance " << _qr << " yuan;" << endl;
     }
 };
 
 class Account
 {
 public:
-    Account(int _rmb)
+    Account(int _rmb = 0)
     {
         rmb = _rmb;
     }
 
-    void addObserver(Observer *op)
+    void addObserver(shared_ptr<Observer> op)
     {
         vp.push_back(op);
     }
@@ -57,57 +57,40 @@ public:
     void save(int _sr)
     {
         rmb += _sr;
-        for (vector<Observer *>::iterator it = vp.begin(); it != vp.end(); it++)
-        {
-            (*it)->msgs(_sr, rmb);
-        }
+        for (shared_ptr<Observer> o : vp)
+            o->msg_save(_sr, rmb);
     }
 
     void withdraw(int _wr)
     {
         if (_wr > rmb)
-        {
             _wr = rmb;
-            rmb = 0;
-        }
-        else
-            rmb -= _wr;
-        for (vector<Observer *>::iterator it = vp.begin(); it != vp.end(); it++)
-        {
-            (*it)->msgw(_wr, rmb);
-        }
+        rmb -= _wr;
+        for (shared_ptr<Observer> o : vp)
+            o->msg_save(_wr, rmb);
     }
 
 private:
-    vector<Observer *> vp;
+    vector<shared_ptr<Observer>> vp;
     int rmb;
 };
 
-
 int main()
 {
-    Account account(1000);        // 银行开户，并存入1000元
+    Account account(1000);                      // 银行开户，并存入1000元
+    account.addObserver(make_shared<Mobile>()); // 在银行账号中注册手机
+    account.addObserver(make_shared<QQ>());     // 在银行账号中注册QQ
 
-    Mobile mobile;                // 手机对象
-    account.addObserver(&mobile); // 在银行账号中注册手机
+    cout << "deposit 200 yuan->" << endl;
+    account.save(200);
+    cout << endl;
 
-    QQ qq;                        // QQ对象
-    account.addObserver(&qq);     // 在银行账号中注册QQ
-
-    cout << "存入200元->" << endl;
-    account.save(200); 
-
-    cout<<endl;
-    Sleep(1000);
-
-    cout << "取出800元<-" << endl;
+    cout << "withdraw 800 yuan<-" << endl;
     account.withdraw(800);
+    cout << endl;
 
-    cout<<endl;
-    Sleep(1000);
-
-    cout << "尝试取出1000元<-" << endl;
-    account.withdraw(1000); 
+    cout << "try to withdraw 1000 yuan<-" << endl;
+    account.withdraw(1000);
 
     return 0;
 }
